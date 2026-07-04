@@ -1,0 +1,78 @@
+import React, { useRef } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+
+export default function ContentRow({ title, items = [], onSelect }) {
+  const rowRef = useRef(null);
+
+  const handleScroll = (direction) => {
+    if (rowRef.current) {
+      const { scrollLeft, clientWidth } = rowRef.current;
+      const scrollTo = direction === 'left' 
+        ? scrollLeft - clientWidth * 0.75 
+        : scrollLeft + clientWidth * 0.75;
+      
+      rowRef.current.scrollTo({ left: scrollTo, behavior: 'smooth' });
+    }
+  };
+
+  if (!items || items.length === 0) return null;
+
+  return (
+    <div className="space-y-4 relative group/row">
+      {/* Título de la Categoría */}
+      <h3 className="font-serif italic text-2xl text-[#1d1d1f] px-1">
+        {title}
+      </h3>
+      
+      <div className="relative">
+        {/* Botón de Desplazamiento Izquierdo */}
+        <button 
+          onClick={() => handleScroll('left')}
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-40 bg-white/80 backdrop-blur-md border border-[#d2d2d7] text-[#1d1d1f] p-3 rounded-full shadow-md opacity-0 group-hover/row:opacity-100 transition-opacity duration-300 hover:bg-white -left-5 hidden md:flex items-center justify-center"
+        >
+          <ChevronLeft size={20} strokeWidth={2} />
+        </button>
+
+        {/* Contenedor Deslizante Horizontal */}
+        <div 
+          ref={rowRef}
+          className="flex gap-6 overflow-x-auto scrollbar-none px-1 py-4 scroll-smooth snap-x snap-mandatory"
+        >
+          {items.map((item) => (
+            <div 
+              key={item.id}
+              onClick={() => onSelect && onSelect(item)}
+              className="flex-none w-48 sm:w-56 snap-start group/card cursor-pointer"
+            >
+              {/* Tarjeta de Contenido */}
+              <div className="relative aspect-[4/5] bg-[#f5f5f7] rounded-2xl overflow-hidden shadow-sm group-hover/card:shadow-xl transition-all duration-500 ease-out border border-[#d2d2d7]/30">
+                <img 
+                  src={item.poster_url || "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80"} 
+                  alt={item.titulo}
+                  className="w-full h-full object-cover filter grayscale group-hover/card:grayscale-0 group-hover/card:scale-105 transition-all duration-700 ease-out"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-500" />
+              </div>
+              
+              {/* Metadatos de la Publicación */}
+              <h4 className="mt-3 font-serif italic text-lg text-[#1d1d1f] group-hover/card:text-[#0066FF] transition-colors truncate px-1">
+                {item.titulo}
+              </h4>
+              <p className="text-[10px] font-bold text-[#86868b] mt-0.5 px-1 tracking-widest uppercase">
+                {item.anio} • {item.categoria}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Botón de Desplazamiento Derecho */}
+        <button 
+          onClick={() => handleScroll('right')}
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-40 bg-white/80 backdrop-blur-md border border-[#d2d2d7] text-[#1d1d1f] p-3 rounded-full shadow-md opacity-0 group-hover/row:opacity-100 transition-opacity duration-300 hover:bg-white -right-5 hidden md:flex items-center justify-center"
+        >
+          <ChevronRight size={20} strokeWidth={2} />
+        </button>
+      </div>
+    </div>
+  );
+}

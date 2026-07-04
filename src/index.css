@@ -1,0 +1,15 @@
+/* 1. Importamos las fuentes de Google Fonts (Inter para texto, Playfair para títulos) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+
+/* 2. Activamos Tailwind CSS */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 3. Estilos base para que todo el fondo tenga el color premium de Apple */
+body {
+  background-color: #fbfbfd;
+  color: #1d1d1f;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
