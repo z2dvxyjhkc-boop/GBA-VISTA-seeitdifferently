@@ -45,6 +45,11 @@ export default function VISTAAuth({ onLogin }) {
   const [error, setError] = useState('');
 
   const normalizePin = (value) => value.replace(/\D/g, '').slice(0, 4);
+  const focusPinInput = () => {
+    if (loading) return;
+
+    pinInputRef.current?.focus({ preventScroll: true });
+  };
 
   // Limpiar errores si el usuario se mueve entre pantallas
   useEffect(() => {
@@ -367,7 +372,12 @@ export default function VISTAAuth({ onLogin }) {
               </p>
               <div
                 className="relative w-full cursor-text"
-                onClick={() => pinInputRef.current?.focus({ preventScroll: true })}
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  focusPinInput();
+                }}
+                onTouchStart={focusPinInput}
+                onClick={focusPinInput}
               >
                 <PinIndicators length={pin.length} />
                 <input
@@ -380,9 +390,10 @@ export default function VISTAAuth({ onLogin }) {
                   aria-label="Clave de seguridad de 4 dígitos"
                   autoComplete={flow === 'login' ? 'current-password' : 'new-password'}
                   enterKeyHint="done"
-                  className="absolute inset-0 h-full w-full cursor-text opacity-0"
+                  className="absolute inset-0 h-full w-full cursor-text appearance-none border-0 bg-transparent text-base text-transparent caret-transparent outline-none"
                   value={pin}
                   onChange={(e) => setPin(normalizePin(e.target.value))}
+                  onFocus={(e) => e.target.setSelectionRange(pin.length, pin.length)}
                   disabled={loading}
                   autoFocus
                   required
