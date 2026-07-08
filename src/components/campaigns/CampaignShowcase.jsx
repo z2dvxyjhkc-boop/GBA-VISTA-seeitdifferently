@@ -5,7 +5,6 @@ import { useCampaigns } from '../../hooks/useCampaigns';
 const getPrimaryAsset = (campaign) => (
   campaign.assets?.find(asset => asset.tipo === 'banner')
   || campaign.assets?.find(asset => asset.tipo === 'poster')
-  || campaign.assets?.[0]
 );
 
 const getVideoAsset = (campaign) => campaign.assets?.find(asset => asset.tipo === 'video');
@@ -118,7 +117,8 @@ export default function CampaignShowcase({ campaigns = [] }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {visibleCampaigns.map((campaign) => {
           const asset = getPrimaryAsset(campaign);
-          const hasVideo = Boolean(getVideoAsset(campaign));
+          const videoAsset = getVideoAsset(campaign);
+          const hasVideo = Boolean(videoAsset);
 
           return (
             <button
@@ -128,6 +128,14 @@ export default function CampaignShowcase({ campaigns = [] }) {
             >
               {asset?.url ? (
                 <img src={asset.url} alt={campaign.titulo} className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-700" />
+              ) : videoAsset?.url ? (
+                <video
+                  src={videoAsset.url}
+                  className="absolute inset-0 w-full h-full object-cover opacity-70 group-hover:scale-105 transition-transform duration-700"
+                  muted
+                  playsInline
+                  preload="metadata"
+                />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center text-white/40"><ImageIcon size={46} /></div>
               )}

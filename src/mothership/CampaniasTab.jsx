@@ -32,6 +32,23 @@ const inferAssetType = (file) => {
   return 'otro';
 };
 
+const getImagePreview = (campaign) => (
+  campaign.assets?.find(asset => asset.tipo === 'banner')
+  || campaign.assets?.find(asset => asset.tipo === 'poster')
+);
+
+const getCampaignVisibilityLabel = (campaign) => {
+  if (campaign.estado !== 'activa') return campaign.estado;
+
+  const now = Date.now();
+  const startsAt = campaign.fecha_inicio ? new Date(campaign.fecha_inicio).getTime() : null;
+  const endsAt = campaign.fecha_fin ? new Date(campaign.fecha_fin).getTime() : null;
+
+  if (startsAt && startsAt > now) return 'programada';
+  if (endsAt && endsAt < now) return 'expirada';
+  return 'activa';
+};
+
 export default function CampaniasTab() {
   const { campaigns, fetchAllCampaigns, loading, error } = useCampaigns();
   const [formData, setFormData] = useState(initialForm);
@@ -71,6 +88,13 @@ export default function CampaniasTab() {
     setStatus({ type: 'info', msg: 'Creando campaña...' });
 
     try {
+      const startsAt = formData.fecha_inicio ? new Date(formData.fecha_inicio).getTime() : null;
+      const endsAt = formData.fecha_fin ? new Date(formData.fecha_fin).getTime() : null;
+
+      if (startsAt && endsAt && startsAt > endsAt) {
+        throw new Error('La fecha de inicio no puede ser posterior a la fecha de fin.');
+      }
+
       const payload = {
         ...formData,
         fecha_inicio: formData.fecha_inicio || null,
@@ -287,7 +311,8 @@ export default function CampaniasTab() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           {campaigns.map(campaign => {
-            const preview = campaign.assets?.find(asset => asset.tipo === 'banner') || campaign.assets?.find(asset => asset.tipo === 'poster') || campaign.assets?.[0];
+            const preview = getImagePreview(campaign);
+            const visibilityLabel = getCampaignVisibilityLabel(campaign);
 
             return (
               <div key={campaign.id} className="bg-[#121212] border border-white/10 rounded-3xl overflow-hidden shadow-xl">
@@ -295,10 +320,17 @@ export default function CampaniasTab() {
                   {preview?.url ? (
                     <img src={preview.url} alt={campaign.titulo} className="w-full h-full object-cover opacity-80" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-neutral-600"><Megaphone size={42} /></div>
+                    <div className="w-full h-full flex flex-col items-center justify-center text-neutral-600 gap-3">
+                      <Megaphone size={42} />
+                      <span className="text-[10px] font-black uppercase tracking-widest">{campaign.assets?.length || 0} asset(s) sin imagen</span>
+                    </div>
                   )}
                   <div className="absolute top-4 left-4 flex items-center gap-2">
-                    <span className="bg-white text-black px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">{campaign.estado}</span>
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                      visibilityLabel === 'activa' ? 'bg-white text-black' : 'bg-yellow-500 text-black'
+                    }`}>
+                      {visibilityLabel}
+                    </span>
                     <span className="bg-black/60 text-white px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest">{campaign.assets?.length || 0} assets</span>
                   </div>
                 </div>
