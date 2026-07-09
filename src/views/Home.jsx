@@ -175,7 +175,7 @@ const CampaignHeroSection = ({ campaign, onOpen }) => {
   if (!campaign) return null;
 
   return (
-    <div ref={heroRef} className="relative w-screen md:w-[100vw] md:-ml-24 h-[88vh] min-h-[640px] overflow-hidden bg-[#0a0a0a] shadow-2xl">
+    <div ref={heroRef} className="relative w-screen md:w-[100vw] md:-ml-24 h-[100svh] min-h-[620px] overflow-hidden bg-[#0a0a0a] shadow-2xl">
       {videoAsset?.url ? (
         <video
           key={videoAsset.id || videoAsset.url}
@@ -284,10 +284,7 @@ export default function Home({ onSelectMovie, onPlay }) {
   const [campaigns, setCampaigns] = useState([]);
   const [expandedCampaign, setExpandedCampaign] = useState(null);
   const intervalRef = useRef(null);
-  const heroItems = [
-    ...campaigns.map(campaign => ({ type: 'campaign', id: `campaign-${campaign.id}`, campaign })),
-    ...featuredMovies.map(movie => ({ type: 'movie', id: `movie-${movie.id}`, movie }))
-  ];
+  const featuredCampaign = campaigns[0] || null;
 
   useEffect(() => {
     const loadData = async () => {
@@ -332,11 +329,11 @@ export default function Home({ onSelectMovie, onPlay }) {
   // Reinicia el temporizador del carrusel (usado por autoplay y por clics manuales)
   const resetInterval = useCallback(() => {
     if (intervalRef.current) clearInterval(intervalRef.current);
-    if (heroItems.length <= 1) return;
+    if (featuredMovies.length <= 1) return;
     intervalRef.current = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % heroItems.length);
+      setCurrentIndex((prev) => (prev + 1) % featuredMovies.length);
     }, 12000);
-  }, [heroItems.length]);
+  }, [featuredMovies.length]);
 
   useEffect(() => {
     resetInterval();
@@ -364,12 +361,12 @@ export default function Home({ onSelectMovie, onPlay }) {
   }, [resetInterval]);
 
   useEffect(() => {
-    if (currentIndex >= heroItems.length) {
+    if (currentIndex >= featuredMovies.length) {
       setCurrentIndex(0);
     }
-  }, [currentIndex, heroItems.length]);
+  }, [currentIndex, featuredMovies.length]);
 
-  const currentHeroItem = heroItems[currentIndex];
+  const currentMovie = featuredMovies[currentIndex];
 
   const openCampaign = useCallback((campaign) => {
     if (!campaign) return;
@@ -398,17 +395,18 @@ export default function Home({ onSelectMovie, onPlay }) {
   return (
     <div className="animate-in fade-in duration-1000 pb-20 relative font-sans">
 
-      {/* 1. HERO ROTATIVO — campañas oficiales primero, después contenido editorial */}
-      {currentHeroItem?.type === 'campaign' && (
+      {/* 1. HERO DE CAMPAÑA — separado del hero editorial */}
+      {featuredCampaign && (
         <CampaignHeroSection
-          campaign={currentHeroItem.campaign}
-          onOpen={() => openCampaign(currentHeroItem.campaign)}
+          campaign={featuredCampaign}
+          onOpen={() => openCampaign(featuredCampaign)}
         />
       )}
 
-      {currentHeroItem?.type === 'movie' && (
+      {/* 2. HERO ROTATIVO — contenido editorial / videos */}
+      {currentMovie && (
         <HeroSection
-          movie={currentHeroItem.movie}
+          movie={currentMovie}
           onPlay={onPlay}
           onSelectMovie={onSelectMovie}
         />
@@ -416,11 +414,11 @@ export default function Home({ onSelectMovie, onPlay }) {
 
       <div className="w-screen md:w-[100vw] md:-ml-24 h-48 bg-gradient-to-b from-[#fbfbfd] to-transparent absolute z-0 -translate-y-24 pointer-events-none" />
 
-      {heroItems.length > 1 && (
+      {featuredMovies.length > 1 && (
         <div className="flex justify-center gap-2.5 -mt-8 mb-12 relative z-30">
-          {heroItems.map((item, idx) => (
+          {featuredMovies.map((movie, idx) => (
             <button
-              key={item.id}
+              key={movie.id}
               onClick={() => handleDotClick(idx)}
               className={`h-1.5 rounded-full transition-all duration-500 ease-out ${
                 idx === currentIndex ? 'w-12 bg-[#1d1d1f]' : 'w-2 bg-[#d2d2d7] hover:bg-[#86868b]'
