@@ -298,7 +298,7 @@ const CampaignHeroSection = ({ campaign, onOpen, onScrollNext, isOpen }) => {
 // ==========================================
 // VISTA HOME PRINCIPAL (Controlador)
 // ==========================================
-export default function Home({ onSelectMovie, onPlay }) {
+export default function Home({ onSelectMovie, onPlay, onNavigateNews }) {
   const { getAllContent, getTop10, loading } = useContent();
   const { fetchActiveCampaigns, trackCampaignEvent } = useCampaigns();
   const [featuredMovies, setFeaturedMovies] = useState([]);
@@ -463,7 +463,11 @@ export default function Home({ onSelectMovie, onPlay }) {
           </div>
           {expandedCampaign && (
             <div ref={campaignDetailRef}>
-              <CampaignDetailInline campaign={expandedCampaign} onClose={() => setExpandedCampaign(null)} />
+              <CampaignDetailInline
+                campaign={expandedCampaign}
+                onClose={() => setExpandedCampaign(null)}
+                onNavigateNews={onNavigateNews}
+              />
             </div>
           )}
         </>
@@ -498,7 +502,11 @@ export default function Home({ onSelectMovie, onPlay }) {
       )}
 
       {!featuredCampaign && expandedCampaign && (
-        <CampaignDetailInline campaign={expandedCampaign} onClose={() => setExpandedCampaign(null)} />
+        <CampaignDetailInline
+          campaign={expandedCampaign}
+          onClose={() => setExpandedCampaign(null)}
+          onNavigateNews={onNavigateNews}
+        />
       )}
 
       {featuredCampaign && showCampaignReturn && (

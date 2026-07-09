@@ -25,6 +25,7 @@ export default function VISTAHome() {
   const [playingVideo, setPlayingVideo] = useState(null);
   const [selectedMovieInfo, setSelectedMovieInfo] = useState(null);
   const [selloSeleccionado, setSelloSeleccionado] = useState(''); // Estado para enrutar el Perfil Editorial
+  const [focusedNewsId, setFocusedNewsId] = useState(null);
 
   // Manejadores de acciones que serán inyectados a las vistas hijas
   const handlePlayVideo = (youtubeId) => {
@@ -35,6 +36,11 @@ export default function VISTAHome() {
     if (movie) setSelectedMovieInfo(movie);
   };
 
+  const handleNavigateNews = (item = null) => {
+    setFocusedNewsId(item?.id || null);
+    setActiveTab('news');
+  };
+
   // El cerebro del tráfico: decide qué archivo montar según el Sidebar u acciones del usuario
   const renderView = () => {
     switch (activeTab) {
@@ -43,6 +49,7 @@ export default function VISTAHome() {
           <HomeView 
             onSelectMovie={handleSelectMovieInfo} 
             onPlay={handlePlayVideo} 
+            onNavigateNews={handleNavigateNews}
           />
         );
       case 'originals':
@@ -58,6 +65,7 @@ export default function VISTAHome() {
             onSelectMovie={handleSelectMovieInfo} 
             setActiveTab={setActiveTab}
             setSelloSeleccionado={setSelloSeleccionado}
+            focusedNewsId={focusedNewsId}
           />
         );
       case 'perfil_editorial': // <-- Nueva ruta interna para la prensa indexada
@@ -94,6 +102,7 @@ export default function VISTAHome() {
           <HomeView 
             onSelectMovie={handleSelectMovieInfo} 
             onPlay={handlePlayVideo} 
+            onNavigateNews={handleNavigateNews}
           />
         );
       default:
@@ -101,6 +110,7 @@ export default function VISTAHome() {
           <HomeView 
             onSelectMovie={handleSelectMovieInfo} 
             onPlay={handlePlayVideo} 
+            onNavigateNews={handleNavigateNews}
           />
         );
     }

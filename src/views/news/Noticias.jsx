@@ -25,27 +25,44 @@ function guardarVistasRegistradas(set) {
   }
 }
 
-export default function Noticias({ setActiveTab, setSelloSeleccionado }) {
+export default function Noticias({ setActiveTab, setSelloSeleccionado, focusedNewsId }) {
   const { loading, allNews, fetchGlobalNews, registrarVisita } = useNews();
 
   useEffect(() => {
     fetchGlobalNews();
   }, [fetchGlobalNews]);
 
+  const prioritizeFocusedNews = useCallback(
+    (items) => {
+      if (!focusedNewsId) return items;
+      return [...items].sort((a, b) => {
+        if (a.id === focusedNewsId) return -1;
+        if (b.id === focusedNewsId) return 1;
+        return 0;
+      });
+    },
+    [focusedNewsId]
+  );
+
   const gimgNews = useMemo(
-    () => allNews.filter(item => !item.es_comunidad),
-    [allNews]
+    () => prioritizeFocusedNews(allNews.filter(item => !item.es_comunidad)),
+    [allNews, prioritizeFocusedNews]
   );
 
   const communityNews = useMemo(
     () =>
-      allNews
+      prioritizeFocusedNews(allNews
         .filter(item => item.es_comunidad)
         .map(item => ({
           ...item,
           sello_editorial: item.sello_editorial || 'Editorial Independiente'
-        })),
-    [allNews]
+        }))),
+    [allNews, prioritizeFocusedNews]
+  );
+
+  const focusedNews = useMemo(
+    () => allNews.find(item => item.id === focusedNewsId),
+    [allNews, focusedNewsId]
   );
 
   const handleNavigateProfile = useCallback(
@@ -96,6 +113,13 @@ export default function Noticias({ setActiveTab, setSelloSeleccionado }) {
         <h1 className="text-5xl md:text-7xl font-serif italic tracking-tighter text-[#1d1d1f] leading-none animate-in slide-in-from-bottom-6 duration-700 delay-75 fill-mode-forwards">
           News & Chronicle.
         </h1>
+        {focusedNews && (
+          <div className="mt-8 inline-flex max-w-full items-center gap-3 rounded-full bg-[#1d1d1f] text-white px-5 py-3 shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <Newspaper size={16} className="text-[#0066FF] flex-shrink-0" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-white/60">Desde campaña</span>
+            <span className="text-sm font-bold truncate">{focusedNews.titulo}</span>
+          </div>
+        )}
       </div>
 
       {/* NIVEL 1: ESCAPARATE OFICIAL */}
@@ -110,6 +134,7 @@ export default function Noticias({ setActiveTab, setSelloSeleccionado }) {
             news={gimgNews}
             onRead={handleRegisterView}
             onNavigateProfile={handleNavigateProfile}
+            focusedNewsId={focusedNewsId}
           />
         </div>
       )}

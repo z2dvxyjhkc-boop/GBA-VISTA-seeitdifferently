@@ -72,7 +72,7 @@ export function CampaignLikeButton({ campaign }) {
   );
 }
 
-export function CampaignDetailInline({ campaign, onClose }) {
+export function CampaignDetailInline({ campaign, onClose, onNavigateNews }) {
   const { trackCampaignEvent } = useCampaigns();
   const videoAsset = getCampaignVideoAsset(campaign);
   const audioAsset = getCampaignAudioAsset(campaign);
@@ -83,6 +83,11 @@ export function CampaignDetailInline({ campaign, onClose }) {
     } else {
       trackCampaignEvent(campaign.id, 'click', asset.id);
     }
+  };
+
+  const handleNewsClick = (item) => {
+    trackCampaignEvent(campaign.id, 'click');
+    onNavigateNews && onNavigateNews(item);
   };
 
   return (
@@ -177,11 +182,11 @@ export function CampaignDetailInline({ campaign, onClose }) {
 
             <div className="grid grid-cols-1 xl:grid-cols-[1.35fr_0.9fr] gap-5">
               {campaign.linkedContent.slice(0, 1).map((item) => (
-                <a
+                <button
+                  type="button"
                   key={item.id}
-                  href="#news"
-                  onClick={() => trackCampaignEvent(campaign.id, 'click')}
-                  className="group relative min-h-[420px] overflow-hidden rounded-3xl bg-black border border-white/10 hover:border-white/30 transition-colors"
+                  onClick={() => handleNewsClick(item)}
+                  className="group relative min-h-[420px] overflow-hidden rounded-3xl bg-black border border-white/10 hover:border-white/30 transition-colors text-left"
                 >
                   {item.banner_url || item.poster_url ? (
                     <img src={item.banner_url || item.poster_url} alt={item.titulo} className="absolute inset-0 w-full h-full object-cover opacity-75 group-hover:scale-105 transition-transform duration-700" />
@@ -200,16 +205,16 @@ export function CampaignDetailInline({ campaign, onClose }) {
                       <p className="text-sm md:text-base text-white/75 line-clamp-3 mt-4 max-w-2xl leading-relaxed">{item.descripcion}</p>
                     )}
                   </div>
-                </a>
+                </button>
               ))}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-4">
                 {campaign.linkedContent.slice(1, 5).map((item, idx) => (
-                  <a
+                  <button
+                    type="button"
                     key={item.id}
-                    href="#news"
-                    onClick={() => trackCampaignEvent(campaign.id, 'click')}
-                    className="group flex gap-4 rounded-2xl bg-white/5 border border-white/10 p-3 hover:bg-white/10 hover:border-white/30 transition-colors"
+                    onClick={() => handleNewsClick(item)}
+                    className="group flex gap-4 rounded-2xl bg-white/5 border border-white/10 p-3 hover:bg-white/10 hover:border-white/30 transition-colors text-left"
                   >
                     <div className="w-24 h-28 rounded-xl overflow-hidden bg-black flex-shrink-0">
                       {item.poster_url || item.banner_url ? (
@@ -229,7 +234,7 @@ export function CampaignDetailInline({ campaign, onClose }) {
                         <p className="text-xs text-neutral-500 line-clamp-2 mt-2">{item.descripcion}</p>
                       )}
                     </div>
-                  </a>
+                  </button>
                 ))}
               </div>
             </div>

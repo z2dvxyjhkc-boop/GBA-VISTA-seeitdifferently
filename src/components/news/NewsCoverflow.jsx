@@ -225,7 +225,7 @@ function QuickLikeButton({ itemId }) {
 // ==========================================
 // COMPONENTE PRINCIPAL
 // ==========================================
-export default function NewsCoverflow({ news = [], onRead, onNavigateProfile }) {
+export default function NewsCoverflow({ news = [], onRead, onNavigateProfile, focusedNewsId }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const [coverflowItems, setCoverflowItems] = useState([]);
   const [expanded, setExpanded] = useState(false);
@@ -238,6 +238,9 @@ export default function NewsCoverflow({ news = [], onRead, onNavigateProfile }) 
   useEffect(() => {
     if (news.length > 0) {
       const sortedNews = [...news].sort((a, b) => {
+        if (a.id === focusedNewsId) return -1;
+        if (b.id === focusedNewsId) return 1;
+
         const isGimgA = !a.es_comunidad || (a.sello_editorial && a.sello_editorial.toUpperCase().includes('GIMG'));
         const isGimgB = !b.es_comunidad || (b.sello_editorial && b.sello_editorial.toUpperCase().includes('GIMG'));
 
@@ -248,8 +251,11 @@ export default function NewsCoverflow({ news = [], onRead, onNavigateProfile }) 
       });
 
       setCoverflowItems(sortedNews.slice(0, 7));
+      if (focusedNewsId && sortedNews.some(item => item.id === focusedNewsId)) {
+        setActiveIndex(0);
+      }
     }
-  }, [news]);
+  }, [news, focusedNewsId]);
 
   const nextSlide = useCallback(() => {
     if (expanded) return; 
