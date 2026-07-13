@@ -22,13 +22,14 @@ import ContentDetailModal from './components/modals/ContentDetailModal'; // <-- 
 
 export default function VISTAHome() {
   const { user, isDueño } = useAuth();
-  const [activeTab, setActiveTab] = useState('home');
+  const sharedEditionId = new URLSearchParams(window.location.search).get('edition');
+  const [activeTab, setActiveTab] = useState(sharedEditionId ? 'news' : 'home');
 
   // Estados locales para el control de overlays e interacciones globales
   const [playingVideo, setPlayingVideo] = useState(null);
   const [selectedMovieInfo, setSelectedMovieInfo] = useState(null);
   const [selloSeleccionado, setSelloSeleccionado] = useState(''); // Estado para enrutar el Perfil Editorial
-  const [focusedNewsId, setFocusedNewsId] = useState(null);
+  const [focusedNewsId, setFocusedNewsId] = useState(sharedEditionId || null);
   const [showWelcome, setShowWelcome] = useState(() => window.localStorage.getItem('vista_show_welcome') === '1');
 
   // Manejadores de acciones que serán inyectados a las vistas hijas

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef, useLayoutEffect } from 'react';
-import { ChevronLeft, ChevronRight, ShieldCheck, Eye, ArrowUpRight, Heart, ChevronUp, FileText, Bookmark, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ShieldCheck, Eye, ArrowUpRight, Heart, ChevronUp, FileText, Bookmark, Check, Share2 } from 'lucide-react';
 import { useLikes } from '../../hooks/useLikes';
 import { useLibrary } from '../../hooks/useLibrary';
+import { useEditionShare } from '../../hooks/useEditionShare';
 
 // IMPORTAMOS LOS MÓDULOS DE I18N
 import { useContentLanguage } from '../../hooks/useContentLanguage';
@@ -20,6 +21,7 @@ function ExpandedPanel({ item, content, onClose }) {
 
   // Extraemos el contenido traducido
   const { lang, setLang, availableLangs, langLabel, titulo, descripcion, poster, paginas } = content;
+  const { shareEdition, shareStatus } = useEditionShare(item, { titulo, descripcion });
 
   useLayoutEffect(() => {
     if (!panelRef.current) return;
@@ -85,7 +87,7 @@ function ExpandedPanel({ item, content, onClose }) {
                 />
               </div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center gap-3 flex-wrap">
                 <button
                   onClick={(e) => { e.stopPropagation(); toggleLike(); }}
                   className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-5 py-2.5 rounded-full transition-all active:scale-95"
@@ -105,6 +107,14 @@ function ExpandedPanel({ item, content, onClose }) {
                 >
                   {isInLibrary ? <Check size={16}/> : <Bookmark size={16}/>}
                   <span className="text-xs font-bold">{isInLibrary ? 'Guardada' : 'Guardar'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={shareEdition}
+                  className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 px-4 py-2.5 rounded-full text-white/90 transition-all active:scale-95"
+                >
+                  {shareStatus === 'idle' ? <Share2 size={16}/> : <Check size={16}/>}
+                  <span className="text-xs font-bold">{shareStatus === 'copied' ? 'Enlace copiado' : shareStatus === 'shared' ? 'Compartida' : 'Compartir'}</span>
                 </button>
                 <span className="flex items-center gap-1.5 text-xs text-neutral-400 font-bold">
                   <Eye size={14} /> {item.vistas || 0} {lang === 'en' ? 'Reads' : 'Lecturas'}
@@ -255,6 +265,21 @@ function QuickSaveButton({ item }) {
     </button>
   );
 }
+
+function QuickShareButton({ item, content }) {
+  const { shareEdition, shareStatus } = useEditionShare(item, content);
+
+  return (
+    <button
+      type="button"
+      onClick={shareEdition}
+      className="p-3 rounded-full border border-[#d2d2d7] bg-white text-[#86868b] hover:bg-[#f5f5f7] transition-all active:scale-95 flex-shrink-0 shadow-sm"
+      title={shareStatus === 'idle' ? 'Compartir edición' : 'Enlace listo'}
+    >
+      {shareStatus === 'idle' ? <Share2 size={20}/> : <Check size={20} className="text-green-600"/>}
+    </button>
+  );
+}
 // ==========================================
 // COMPONENTE PRINCIPAL
 // ==========================================
@@ -381,16 +406,21 @@ export default function NewsCoverflow({ news = [], onRead, onNavigateProfile, fo
       {/* Info del ítem activo (Apple Music Style) */}
       {activeItem && !expanded && (
         <div className="w-full max-w-2xl px-6 text-center flex flex-col items-center gap-3 mb-10 animate-in fade-in duration-500">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (onNavigateProfile && activeItem.sello_editorial) onNavigateProfile(activeItem.sello_editorial);
-            }}
-            className="flex items-center gap-1.5 bg-[#f5f5f7] text-[#1d1d1f] border border-[#d2d2d7] px-3 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase hover:bg-[#1d1d1f] hover:text-white transition-colors"
-          >
-            <ShieldCheck size={14} className={isGimgOfficial ? 'text-blue-500' : 'text-[#1d1d1f]'} />
-            {isGimgOfficial ? 'GIMG OFICIAL' : (activeItem.sello_editorial || 'Independiente')}
-          </button>
+          {isGimgOfficial ? (
+            <span className="flex items-center gap-1.5 bg-[#1d1d1f] text-white border border-[#1d1d1f] px-3 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase">
+              <ShieldCheck size={14} className="text-blue-400"/> GIMG OFICIAL
+            </span>
+          ) : (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                if (onNavigateProfile && activeItem.sello_editorial) onNavigateProfile(activeItem.sello_editorial);
+              }}
+              className="flex items-center gap-1.5 bg-[#f5f5f7] text-[#1d1d1f] border border-[#d2d2d7] px-3 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase hover:bg-[#1d1d1f] hover:text-white transition-colors"
+            >
+              <ShieldCheck size={14}/> {activeItem.sello_editorial || 'Independiente'}
+            </button>
+          )}
 
           <h2 className="text-2xl md:text-3xl font-serif italic text-[#1d1d1f] leading-tight">
             {activeContent.titulo} {/* Título traducido */}
@@ -411,6 +441,7 @@ export default function NewsCoverflow({ news = [], onRead, onNavigateProfile, fo
             </p>
             <QuickLikeButton key={activeItem.id} itemId={activeItem.id} />
             <QuickSaveButton key={`save-${activeItem.id}`} item={activeItem} />
+            <QuickShareButton key={`share-${activeItem.id}`} item={activeItem} content={{ titulo: activeContent.titulo, descripcion: activeContent.descripcion }} />
           </div>
 
           <div className="flex items-center gap-4 mt-1">

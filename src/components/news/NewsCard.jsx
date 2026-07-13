@@ -1,7 +1,8 @@
 import React, { useState, useRef, useLayoutEffect, useCallback } from 'react';
-import { Heart, Eye, ShieldCheck, FileText, ChevronUp, Layers, Bookmark, Check } from 'lucide-react';
+import { Heart, Eye, ShieldCheck, FileText, ChevronUp, Layers, Bookmark, Check, Share2 } from 'lucide-react';
 import { useLikes } from '../../hooks/useLikes';
 import { useLibrary } from '../../hooks/useLibrary';
+import { useEditionShare } from '../../hooks/useEditionShare';
 import { useContentLanguage } from '../../hooks/useContentLanguage';
 import LanguageSwitcher from '../common/LanguageSwitcher';
 import { getEditorialCategoryLabel } from '../../utils/editorialCategories';
@@ -12,6 +13,7 @@ export default function NewsCard({ item, onRead, onNavigateProfile }) {
   const { isLiked, likesCount, toggleLike } = useLikes(item.id);
   const { isInLibrary, toggleLibrary, loading: libraryLoading } = useLibrary(item);
   const { lang, setLang, availableLangs, langLabel, titulo, descripcion, poster, paginas } = useContentLanguage(item);
+  const { shareEdition, shareStatus } = useEditionShare(item, { titulo, descripcion });
   const [isFlipped, setIsFlipped] = useState(false);
   const [contentHeight, setContentHeight] = useState(480);
 
@@ -104,12 +106,14 @@ export default function NewsCard({ item, onRead, onNavigateProfile }) {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-90" />
 
-            <button
-              onClick={handleLikeClick}
-              className="absolute top-5 right-5 w-11 h-11 rounded-full bg-black/30 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white hover:text-black transition-all z-10 shadow-xl"
-            >
-              <Heart size={20} className={isLiked ? 'fill-red-500 text-red-500' : 'text-white'} />
-            </button>
+            <div className="absolute top-5 right-5 z-10 flex gap-2">
+              <button onClick={shareEdition} className="w-11 h-11 rounded-full bg-black/30 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-white hover:text-black transition-all shadow-xl" title="Compartir edición">
+                {shareStatus === 'idle' ? <Share2 size={18}/> : <Check size={18}/>}
+              </button>
+              <button onClick={handleLikeClick} className="w-11 h-11 rounded-full bg-black/30 backdrop-blur-md border border-white/20 flex items-center justify-center hover:bg-white hover:text-black transition-all shadow-xl" title="Me gusta">
+                <Heart size={20} className={isLiked ? 'fill-red-500 text-red-500' : 'text-white'} />
+              </button>
+            </div>
 
             {availableLangs.length > 1 && (
               <div className="absolute top-5 left-5 z-10 rounded-xl bg-black/55 backdrop-blur-md border border-white/10 p-2 shadow-xl">
@@ -172,6 +176,9 @@ export default function NewsCard({ item, onRead, onNavigateProfile }) {
             </div>
             <div className="flex items-center gap-3 flex-wrap flex-shrink-0">
               <LanguageSwitcher availableLangs={availableLangs} lang={lang} setLang={setLang} langLabel={langLabel} variant="dark" />
+              <button onClick={shareEdition} className="h-11 px-4 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white flex items-center gap-2 text-xs font-bold transition-colors" title="Compartir edición">
+                {shareStatus === 'idle' ? <Share2 size={16}/> : <Check size={16}/>}<span className="hidden md:inline">{shareStatus === 'copied' ? 'Enlace copiado' : shareStatus === 'shared' ? 'Compartida' : 'Compartir'}</span>
+              </button>
               <button onClick={handleLibraryClick} disabled={libraryLoading} className={`h-11 px-4 rounded-xl border flex items-center gap-2 text-xs font-bold transition-colors ${isInLibrary ? 'bg-green-500/15 border-green-500/30 text-green-400' : 'bg-white/5 border-white/10 text-white hover:bg-white/10'}`} title={isInLibrary ? 'Quitar de guardados' : 'Guardar edición'}>
                 {isInLibrary ? <Check size={16}/> : <Bookmark size={16}/>}<span className="hidden md:inline">{isInLibrary ? 'Guardada' : 'Guardar'}</span>
               </button>
